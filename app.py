@@ -21,10 +21,8 @@ from column_names import (
 # Uses st.cache_resource to only run once.
 @st.cache_resource
 def init_connection():
-    # url = st.secrets["SUPABASE_URL"]
-    # key = st.secrets["SUPABASE_KEY"]
-    url = "https://pryzvkhecuievhfgyjfu.supabase.co"
-    key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByeXp2a2hlY3VpZXZoZmd5amZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxMDExMzAsImV4cCI6MjA1NDY3NzEzMH0.W15HIDZ3p2mCcTBGKiIrnu4kEiKLac4r9H5NYnxl8Vw"
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
 
