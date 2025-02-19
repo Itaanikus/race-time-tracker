@@ -1,9 +1,7 @@
 import datetime
 import pandas as pd
 import streamlit as st
-
-# from supabase import create_client
-from st_supabase_connection import SupabaseConnection
+from supabase import create_client
 
 from column_names import (
     AGE,
@@ -23,11 +21,9 @@ from column_names import (
 # Uses st.cache_resource to only run once.
 @st.cache_resource
 def init_connection():
-    # Initialize connection.
-    return st.connection("supabase", type=SupabaseConnection)
-    # url = st.secrets["SUPABASE_URL"]
-    # key = st.secrets["SUPABASE_KEY"]
-    # return create_client(url, key)
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
 
 
 # Initialize the Supabase client
