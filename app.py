@@ -166,7 +166,7 @@ distance_col = st.selectbox(
 )
 
 st.write(
-    f"Filtering by {gender_filter} gender and {age_filter} age group and sorting by {distance_col}."
+    f"Filtering by {gender_filter} gender and {age_filter} age group and sorting by {distance_col} race time."
 )
 # Show filtered data
 runner_data = get_runners_and_times(gender_filter, selected_age_range)
