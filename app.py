@@ -14,6 +14,7 @@ from column_names import (
     RUNNER_ID,
     RACE_DISTANCE,
     RACE_TIME,
+    RACE_DATE,
 )
 
 
@@ -164,7 +165,9 @@ distance_col = st.selectbox(
     "Sort by Race Time", ["5", "10", "Half Marathon", "Marathon"]
 )
 
-st.write(f"Filtering by {gender_filter} gender and {age_filter} age group.")
+st.write(
+    f"Filtering by {gender_filter} gender and {age_filter} age group and sorting by {distance_col}."
+)
 # Show filtered data
 runner_data = get_runners_and_times(gender_filter, selected_age_range)
 display_race_times_table(runner_data, distance_col)
@@ -178,6 +181,7 @@ gender_input = st.selectbox("Select Gender", ["male", "female"])
 
 distance_input = st.selectbox("Race Distance", ["5", "10", "Half Marathon", "Marathon"])
 time_input = st.text_input("Enter Race Time (HH:MM:SS)", placeholder="00:00:00")
+race_date_input = st.date_input("Enter Date of Race")
 
 if st.button("Submit New Race Time"):
     # Parse race time
@@ -208,6 +212,7 @@ if st.button("Submit New Race Time"):
             RUNNER_ID: runner_id,
             RACE_DISTANCE: distance_input,
             RACE_TIME: time_input,
+            RACE_DATE: str(race_date_input),
         }
         supabase.table(RACETIME).insert(race_data).execute()
 
