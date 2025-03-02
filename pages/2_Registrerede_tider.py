@@ -1,9 +1,8 @@
-import datetime
 import pandas as pd
 import streamlit as st
 
 from st_aggrid import AgGrid
-from db_utils import init_db
+from utils.db_utils import init_db
 from column_names import (
     AGE,
     ID,
@@ -25,11 +24,11 @@ st.set_page_config(
 # region get data
 supabase = init_db()
 def get_members(gender):
-    if gender == "all":
-        return supabase.table(MEMBERS).select(ID, NAME, BIRTH_DATE, GENDER).execute()
+    if gender == "Alle":
+        return supabase.table(MEMBERS).select(ID, NAME, AGE, BIRTH_DATE, GENDER).execute()
     return (
         supabase.table(MEMBERS)
-        .select(ID, NAME, BIRTH_DATE, GENDER)
+        .select(ID, NAME, AGE, BIRTH_DATE, GENDER)
         .eq(GENDER, gender)
         .execute()
     )
@@ -45,22 +44,15 @@ def get_racetimes():
 
 # region create table view
 
-def birth_date_to_age(birth_date):
-    today = datetime.date.today()
-    born = datetime.datetime.strptime(birth_date, "%Y-%m-%d").date()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-
-
 # Helper function to get runners and their race times
 def get_runners_and_times(gender, age_range):
     # Get data
     members = get_members(gender)
+
+    if not members or not members.data:
+        return None
+
     racetimes = get_racetimes()
-    # create age column from birth_date
-    members.data = [
-        {**member, AGE: birth_date_to_age(member[BIRTH_DATE])}
-        for member in members.data
-    ]
 
     members_df = pd.DataFrame(members.data)
 
@@ -93,47 +85,41 @@ def get_runners_and_times(gender, age_range):
 
 
 # Function to display the race times table
-def display_race_times_table(runner_data, distance_col):
+def display_race_times_table(runner_data):
     runner_data_display = runner_data.drop(columns=[ID, RUNNER_ID, BIRTH_DATE])
-    # Arrange the columns in the desired order
+    columns = [NAME, GENDER, AGE, "5K", "10K", "Half Marathon", "Marathon"]
+
+    for col in columns:
+        if col not in runner_data_display.columns:
+            runner_data_display[col] = pd.NA  # Assign NaN to missing columns
+
     runner_data_display = runner_data_display[
         [NAME, GENDER, AGE, "5K", "10K", "Half Marathon", "Marathon"]
     ]
+
     # Sort by Race Time
-    return runner_data_display.sort_values(by=distance_col)
+    return runner_data_display
 
 
 # UI Setup
 st.title("KICK Race Time Tracker")
 
-# Custom CSS to change the selectbox width
-st.markdown(
-    """
-    <style>
-    .stSelectbox div {
-        width: 300px;  /* Change this value to adjust the width */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # Region filter by gender and age
 gender_dropdown, age_dropdown = st.columns(2)
 with gender_dropdown:
     gender_filter = st.selectbox(
-        "Filter by Gender",
-        ["all", "male", "female"],
+        "Filtrer på køn",
+        ["Alle", "Mand", "Kvinde"],
         index=0,
-        placeholder="Select gender class",
+        placeholder="Vælg køn",
     )
 with age_dropdown:
     age_filter = st.selectbox(
-        "Filter by Age Group", ["all", "<20", "20-29", "30-39", "40-49", "50-59", ">59"]
+        "Filtrer på aldersgruppe", ["Alle", "<20", "20-29", "30-39", "40-49", "50-59", ">59"]
     )
 
 age_range = {
-    "all": (0, 200),
+    "Alle": (0, 200),
     "<20": (0, 19),
     "20-29": (20, 29),
     "30-39": (30, 39),
@@ -146,18 +132,19 @@ selected_age_range = age_range.get(age_filter)
 
 # endregion
 
-# region sort by race times
-distance_col = st.selectbox(
-    "Sort by Race Time",
-    ["5K", "10K", "Half Marathon", "Marathon"],
-    placeholder="5K"
-)
-
-st.write(
-    f"Filtering by {gender_filter} gender and {age_filter} age group and sorting by {distance_col} race time."
+st.text(
+    f"""
+    Viser oversigt med følgende filtre:
+    Køn: {gender_filter}
+    Aldersgruppe: {age_filter}
+    """
 )
 # Show filtered data
 runner_data = get_runners_and_times(gender_filter, selected_age_range)
 
 st.write("Race Times")
-AgGrid(display_race_times_table(runner_data, distance_col))
+if runner_data is None:
+    columns = [NAME, GENDER, AGE, "5K", "10K", "Half Marathon", "Marathon"]
+    AgGrid(pd.DataFrame(columns=columns))
+else:
+    AgGrid(display_race_times_table(runner_data))
