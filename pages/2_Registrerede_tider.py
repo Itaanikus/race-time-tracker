@@ -2,7 +2,8 @@ import datetime
 import pandas as pd
 import streamlit as st
 
-from db_utils import init_connection
+from st_aggrid import AgGrid
+from db_utils import init_db
 from column_names import (
     AGE,
     ID,
@@ -22,7 +23,7 @@ st.set_page_config(
 )
 
 # region get data
-supabase = init_connection()
+supabase = init_db()
 def get_members(gender):
     if gender == "all":
         return supabase.table(MEMBERS).select(ID, NAME, BIRTH_DATE, GENDER).execute()
@@ -93,16 +94,13 @@ def get_runners_and_times(gender, age_range):
 
 # Function to display the race times table
 def display_race_times_table(runner_data, distance_col):
-    st.write("Race Times")
     runner_data_display = runner_data.drop(columns=[ID, RUNNER_ID, BIRTH_DATE])
     # Arrange the columns in the desired order
     runner_data_display = runner_data_display[
-        [NAME, GENDER, AGE, "5", "10", "Half Marathon", "Marathon"]
+        [NAME, GENDER, AGE, "5K", "10K", "Half Marathon", "Marathon"]
     ]
     # Sort by Race Time
-    runner_data_display = runner_data_display.sort_values(by=distance_col)
-
-    st.table(runner_data_display)
+    return runner_data_display.sort_values(by=distance_col)
 
 
 # UI Setup
@@ -150,7 +148,9 @@ selected_age_range = age_range.get(age_filter)
 
 # region sort by race times
 distance_col = st.selectbox(
-    "Sort by Race Time", ["5", "10", "Half Marathon", "Marathon"]
+    "Sort by Race Time",
+    ["5K", "10K", "Half Marathon", "Marathon"],
+    placeholder="5K"
 )
 
 st.write(
@@ -158,4 +158,6 @@ st.write(
 )
 # Show filtered data
 runner_data = get_runners_and_times(gender_filter, selected_age_range)
-display_race_times_table(runner_data, distance_col)
+
+st.write("Race Times")
+AgGrid(display_race_times_table(runner_data, distance_col))

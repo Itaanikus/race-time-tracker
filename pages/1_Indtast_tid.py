@@ -1,7 +1,7 @@
 import datetime
 import streamlit as st
 
-from db_utils import init_connection
+from db_utils import init_db
 from column_names import (
     ID,
     NAME,
@@ -33,7 +33,7 @@ if st.button("Indsend tid"):
         race_time = None
 
     if race_time:
-        supabase = init_connection()
+        supabase = init_db()
 
         existing_runner = (
             supabase.table(MEMBERS).select(ID).eq(NAME, name_input).execute()
