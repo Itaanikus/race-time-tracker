@@ -72,3 +72,4 @@ watchdog==6.0.0 ; python_version >= "3.13" and python_version < "4.0" and platfo
 websockets==14.2 ; python_version >= "3.13" and python_version < "4.0"
 yarl==1.18.3 ; python_version >= "3.13" and python_version < "4.0"
 supabase
+streamlit-aggrid
