@@ -1,7 +1,6 @@
 CREATE TABLE members_dim (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    age INT,
     birth_date DATE,
     gender VARCHAR(10)
 );
