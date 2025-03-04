@@ -1,19 +1,24 @@
 import pandas as pd
 import streamlit as st
 
-from st_aggrid import AgGrid
+from st_aggrid import AgGrid, ColumnsAutoSizeMode
 from utils.db_utils import init_db
+from utils.date_utils import convert_date_to_age
 from column_names import (
     AGE,
+    AGE_HEADER,
+    GENDER_HEADER,
     ID,
     NAME,
     BIRTH_DATE,
     GENDER,
     MEMBERS,
+    NAME_HEADER,
     RACETIME,
     RUNNER_ID,
     RACE_DISTANCE,
     RACE_TIME,
+    RACE_LOCATION,
 )
 
 st.set_page_config(page_title="Registrerede tider", page_icon=":material/table:")
@@ -24,12 +29,10 @@ supabase = init_db()
 
 def get_members(gender):
     if gender == "Alle":
-        return (
-            supabase.table(MEMBERS).select(ID, NAME, AGE, BIRTH_DATE, GENDER).execute()
-        )
+        return supabase.table(MEMBERS).select(ID, NAME, BIRTH_DATE, GENDER).execute()
     return (
         supabase.table(MEMBERS)
-        .select(ID, NAME, AGE, BIRTH_DATE, GENDER)
+        .select(ID, NAME, BIRTH_DATE, GENDER)
         .eq(GENDER, gender)
         .execute()
     )
@@ -37,7 +40,9 @@ def get_members(gender):
 
 def get_racetimes():
     return (
-        supabase.table(RACETIME).select(RUNNER_ID, RACE_DISTANCE, RACE_TIME).execute()
+        supabase.table(RACETIME)
+        .select(RUNNER_ID, RACE_DISTANCE, RACE_TIME, RACE_LOCATION)
+        .execute()
     )
 
 
@@ -55,6 +60,12 @@ def get_runners_and_times(gender, age_range):
         return None
 
     racetimes = get_racetimes()
+
+    # create age column from birth_date
+    members.data = [
+        {**member, AGE: convert_date_to_age(member[BIRTH_DATE])}
+        for member in members.data
+    ]
 
     members_df = pd.DataFrame(members.data)
 
@@ -145,9 +156,24 @@ st.text(
 # Show filtered data
 runner_data = get_runners_and_times(gender_filter, selected_age_range)
 
+grid_options = {
+    "columnDefs": [
+        {"headerName": NAME_HEADER, "field": NAME},
+        {"headerName": GENDER_HEADER, "field": GENDER},
+        {"headerName": AGE_HEADER, "field": AGE},
+        {"headerName": "5K", "field": "5K"},
+        {"headerName": "10K", "field": "10K"},
+        {"headerName": "Half Marathon", "field": "Half Marathon"},
+        {"headerName": "Marathon", "field": "Marathon"},
+    ],
+}
+
 st.write("Race Times")
 if runner_data is None:
-    columns = [NAME, GENDER, AGE, "5K", "10K", "Half Marathon", "Marathon"]
-    AgGrid(pd.DataFrame(columns=columns))
+    AgGrid(pd.DataFrame(grid_options), gridOptions=grid_options)
 else:
-    AgGrid(display_race_times_table(runner_data))
+    AgGrid(
+        display_race_times_table(runner_data),
+        gridOptions=grid_options,
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
+    )

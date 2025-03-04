@@ -15,3 +15,8 @@ RACE_DISTANCE = "race_distance"
 RACE_TIME = "race_time"
 RACE_DATE = "race_date"
 RACE_LOCATION = "race_location"
+
+# HEADER NAMES
+NAME_HEADER = "Navn"
+AGE_HEADER = "Alder"
+GENDER_HEADER = "Køn"
