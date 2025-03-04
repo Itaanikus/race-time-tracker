@@ -13,19 +13,20 @@ from column_names import (
     RACETIME,
     RUNNER_ID,
     RACE_DISTANCE,
-    RACE_TIME
+    RACE_TIME,
 )
 
-st.set_page_config(
-    page_title="Registrerede tider",
-    page_icon=":material/table:"    
-)
+st.set_page_config(page_title="Registrerede tider", page_icon=":material/table:")
 
 # region get data
 supabase = init_db()
+
+
 def get_members(gender):
     if gender == "Alle":
-        return supabase.table(MEMBERS).select(ID, NAME, AGE, BIRTH_DATE, GENDER).execute()
+        return (
+            supabase.table(MEMBERS).select(ID, NAME, AGE, BIRTH_DATE, GENDER).execute()
+        )
     return (
         supabase.table(MEMBERS)
         .select(ID, NAME, AGE, BIRTH_DATE, GENDER)
@@ -43,6 +44,7 @@ def get_racetimes():
 # endregion get data
 
 # region create table view
+
 
 # Helper function to get runners and their race times
 def get_runners_and_times(gender, age_range):
@@ -115,7 +117,8 @@ with gender_dropdown:
     )
 with age_dropdown:
     age_filter = st.selectbox(
-        "Filtrer på aldersgruppe", ["Alle", "<20", "20-29", "30-39", "40-49", "50-59", ">59"]
+        "Filtrer på aldersgruppe",
+        ["Alle", "<20", "20-29", "30-39", "40-49", "50-59", ">59"],
     )
 
 age_range = {

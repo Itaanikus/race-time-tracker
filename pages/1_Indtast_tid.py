@@ -10,6 +10,7 @@ from column_names import (
     BIRTH_DATE,
     GENDER,
     MEMBERS,
+    RACE_LOCATION,
     RACETIME,
     RUNNER_ID,
     RACE_DISTANCE,
@@ -18,16 +19,18 @@ from column_names import (
 )
 
 
-
 st.subheader("Indtast en ny løbstid")
 
 name_input = st.text_input("Navn", placeholder="Morten Westergaard")
 birth_date_input = st.date_input("Fødselsdag", value=datetime.date(2000, 1, 1))
 gender_input = st.selectbox("Køn", ["Mand", "Kvinde"])
 
-distance_input = st.selectbox("Løbsdistance", ["5K", "10K", "Half Marathon", "Marathon"])
+distance_input = st.selectbox(
+    "Løbsdistance", ["5K", "10K", "Half Marathon", "Marathon"]
+)
 time_input = st.text_input("Indtast race-tid (HH:MM:SS)", placeholder="00:00:00")
 race_date_input = st.date_input("Dato for løb")
+race_location_input = st.text_input("Angiv navn på løbet", placeholder="Royal Run")
 
 if st.button("Indsend tid"):
     # Parse race time
@@ -63,6 +66,7 @@ if st.button("Indsend tid"):
             RACE_DISTANCE: distance_input,
             RACE_TIME: time_input,
             RACE_DATE: str(race_date_input),
+            RACE_LOCATION: race_location_input,
         }
 
         supabase.table(RACETIME).insert(race_data).execute()
