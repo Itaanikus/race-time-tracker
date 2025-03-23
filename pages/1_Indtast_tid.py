@@ -21,9 +21,18 @@ from column_names import (
 
 st.subheader("Indtast en ny løbstid")
 
-name_input = st.text_input("Navn", placeholder="Morten Westergaard")
-birth_date_input = st.date_input("Fødselsdag", value=datetime.date(2000, 1, 1))
-gender_input = st.selectbox("Køn", ["Mand", "Kvinde"])
+# Inputs with session state defaults
+if "name" not in st.session_state:
+    st.session_state["name"] = ""
+name_input = st.text_input("Navn", value=st.session_state["name"], placeholder="Morten Westergaard")
+
+if "birth_date" not in st.session_state:
+    st.session_state["birth_date"] = datetime.date(2000, 1, 1)
+birth_date_input = st.date_input("Fødselsdag", value=st.session_state["birth_date"])
+
+if "gender" not in st.session_state:
+    st.session_state["gender"] = "Mand"
+gender_input = st.selectbox("Køn", ["Mand", "Kvinde"], index=["Mand", "Kvinde"].index(st.session_state["gender"]))
 
 distance_input = st.selectbox(
     "Løbsdistance", ["5K", "10K", "Half Marathon", "Marathon"]
@@ -53,7 +62,6 @@ if st.button("Indsend tid"):
             parsed_birth_date = str(birth_date_input)
             runner_data = {
                 NAME: name_input,
-                AGE: convert_date_to_age(parsed_birth_date),
                 BIRTH_DATE: parsed_birth_date,
                 GENDER: gender_input,
             }
@@ -70,4 +78,8 @@ if st.button("Indsend tid"):
         }
 
         supabase.table(RACETIME).insert(race_data).execute()
+
+        st.session_state["name"] = name_input
+        st.session_state["birth_date"] = birth_date_input
+        st.session_state["gender"] = gender_input
         st.success(f"Race time for {name_input} added successfully!")
